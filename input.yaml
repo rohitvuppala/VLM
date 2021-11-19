@@ -1,0 +1,78 @@
+# Wing - Test Case 1
+#--------------------
+# Unswept, constant chord wing
+# angle units = 'deg'
+
+name: "Testcase1"
+sref: 10.0
+bref: 10.0
+cref: 1.0
+
+nwing: 2
+
+wing1:
+  wing_name: "wing"
+  npatch: 2
+  patch1:
+    nspan: 2
+    nlat: 50
+    root:
+      xyz_qc: [0.25,-5.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+    tip:
+      xyz_qc: [0.25,0.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+
+  patch2:
+    nspan: 2
+    nlat: 50
+    root:
+      xyz_qc: [0.25,0.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+    tip:
+      xyz_qc: [0.25,5.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+
+wing2:
+  wing_name: "tail"
+  npatch: 2
+  patch1:
+    nspan: 2
+    nlat: 27
+    root:
+      xyz_qc: [1.25,-2.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+    tip:
+      xyz_qc: [1.25,0.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+
+  patch2:
+    nspan: 2
+    nlat: 27
+    root:
+      xyz_qc: [1.25,0.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+    tip:
+      xyz_qc: [1.25,2.0,0.0]
+      chord:  1.0
+      twist:  0.0
+      alpha_zl: 0.0
+
+aseq: [0.0,6.0,6]
+alpha: 5.0
+vinf: 1.0
+rho : 1.0
