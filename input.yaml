@@ -15,7 +15,7 @@ wing1:
   npatch: 2
   patch1:
     nspan: 2
-    nlat: 50
+    nlat: 100
     root:
       xyz_qc: [0.25,-5.0,0.0]
       chord:  1.0
@@ -29,7 +29,7 @@ wing1:
 
   patch2:
     nspan: 2
-    nlat: 50
+    nlat: 100
     root:
       xyz_qc: [0.25,0.0,0.0]
       chord:  1.0
@@ -46,28 +46,28 @@ wing2:
   npatch: 2
   patch1:
     nspan: 2
-    nlat: 27
+    nlat: 30
     root:
-      xyz_qc: [1.25,-2.0,0.0]
+      xyz_qc: [4.25,-2.0,0.0]
       chord:  1.0
       twist:  0.0
       alpha_zl: 0.0
     tip:
-      xyz_qc: [1.25,0.0,0.0]
+      xyz_qc: [4.25,0.0,0.0]
       chord:  1.0
       twist:  0.0
       alpha_zl: 0.0
 
   patch2:
     nspan: 2
-    nlat: 27
+    nlat: 30
     root:
-      xyz_qc: [1.25,0.0,0.0]
+      xyz_qc: [4.25,0.0,0.0]
       chord:  1.0
       twist:  0.0
       alpha_zl: 0.0
     tip:
-      xyz_qc: [1.25,2.0,0.0]
+      xyz_qc: [4.25,2.0,0.0]
       chord:  1.0
       twist:  0.0
       alpha_zl: 0.0
