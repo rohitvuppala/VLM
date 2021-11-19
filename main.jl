@@ -116,6 +116,7 @@ end
     geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nlat_perpatch,xyz_qc_patch,chord_patch,twist_patch,α_zl_patch,Λ,debug)
 
 Calculate the geometric propoerties for all the lattice elements
+	
 	Inputs:
 		nwing      - number of wings
 		ntot_patch - total number of patches  
@@ -309,17 +310,26 @@ function geom_calc(nwing,ntot_patch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_
                 display("xyz_qc_patch")
                 display(xyz_qc_patch)
         end
-		
+
         return nspn,spn_map,spn_loc,sbar,ebar,mbar,nbar,cbar,dbar,tbar,chord,twist,α_zl,θ,Λ,ds
 end
 """
     calc_vind_sinf(rbar,sbar,tbar)
 
+    Function to influence for semi-infinte vortex element given starting,ending and tail direction
+
     Input :
+		rbar - vector for pointing the location of evaluation
+				: form - Array{Float,1}, size {3} 
+		sbar - vector for pointing the start of filament
+				: form - Array{Float,1}, size {3} 
+		tbar - vector for pointing the trailing of vortex 
+				: form - Array{Float,1}, size {3}
 
     Output:
+		q    - vector of influence at the given location
+				: form - Array{Float,1}, size {3}
 
-    Function to influence for semi-infinte vortex element given starting,ending and tail direction
 """
 function calc_q_sinf(rbar,sbar,tbar)
 
@@ -348,12 +358,20 @@ function calc_q_sinf(rbar,sbar,tbar)
 end
 """
     calc_vind_finite(rbar,sbar,ebar)
+	
+    Function to find the three velocity componenets for downwash given the line segment and the point
 
-    Input : 
+	Input :
+		rbar - vector for pointing the location of evaluation
+				: form - Array{Float,1}, size {3} 
+		sbar - vector for pointing the start of filament
+				: form - Array{Float,1}, size {3} 
+		ebar - vector for pointing the end of filament 
+				: form - Array{Float,1}, size {3}
 
     Output:
-
-    Function to find the three velocity componenets for downwash given the line segment and the point
+		q    - vector of influence at the given location
+				: form - Array{Float,1}, size {3}	
 """
 function calc_q_finite(rbar,sbar,ebar)
 
