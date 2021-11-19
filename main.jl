@@ -292,7 +292,7 @@ function geom_calc(nwing,ntot_patch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_
 								#Compute ispn_bef to locate where in spn_map this patch is starting
 								ispn_bef = 0
 								for ip in 1:ipatch-1
-									ispn_bef = ilat_bef + Int64(nlat_perpatch[ip]/nspan_perpatch[ip])
+									ispn_bef = ispn_bef + Int64(nlat_perpatch[ip]/nspan_perpatch[ip])
 								end
 								spn_map[ilat] = ispn_bef + k
 								
@@ -358,7 +358,7 @@ function calc_q_sinf(rbar,sbar,tbar)
 end
 """
     calc_vind_finite(rbar,sbar,ebar)
-	
+
     Function to find the three velocity componenets for downwash given the line segment and the point
 
 	Input :
