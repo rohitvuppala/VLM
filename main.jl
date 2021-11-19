@@ -40,6 +40,7 @@ Outputs:
 	twist_patch
 			  - twists for the pacthces of the form [(start,end),gloabl patch number]		  
 	 α_zl_patch
+	 		  - zero lift alpha values of the form [(start,end),gloabl patch number]
 
 """
 function read_inp(inp_file,debug=0)
@@ -115,8 +116,64 @@ end
     geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nlat_perpatch,xyz_qc_patch,chord_patch,twist_patch,α_zl_patch,Λ,debug)
 
 Calculate the geometric propoerties for all the lattice elements
+	Inputs:
+		nwing      - number of wings
+		ntot_patch - total number of patches  
+		npatch_perwing
+				   - number of patches per wing, form : [Integer value]
+		ntot_lat   - total numer of lattices	
+		nspan_perpatch
+				   - number of spanwise strips per patch
+		nlat_perpatch
+				   - number of lattices per patch (uses global patch numbering)	
+		xyz_qc_patch
+				   - quarter chord locations for each patch of form [(x,y,z),(start,end),global patch number]
+		 chord_patch
+				   - chord lengths for the pacthes of form [(start,end),global patch number]
+		 twist_patch
+				   - twists for the pacthces of the form [(start,end),gloabl patch number]		  
+		α_zl_patch
+	 			   - zero lift alpha values of the form [(start,end),gloabl patch numb
+		debug      - debug flag to enable some debugging options
+	
+	Output:
+		nspn       - number of span wise locations to plt local distributions like Cl
+						: If more than one wing, each wings span wise locations are stored in that order
+						  Example - Wing + Tail 
+						  nspn = span locations on wing + span locations on tail
+		spn_map    - mapping for all the lattices to span locations 
+						: form - Array{Integers},size "ntot_lat" pointing to position in "spn_loc" array
+		spn_loc    - locations along span (y-coordinates)
+						: form - Array{Float,1}, size "nspn" 
+		sbar       - locations of starting point of horse-shoe lattice for all lattices
+						: form - Array{Float,2}, size {3,ntot_lat}
+		ebar       - locations of ending point of horse-shoe lattice for all lattices
+						: form - Array{Float,2}, size {3,ntot_lat}
+		mbar       - locations of middle point of horse-shoe lattice for all lattices
+						: form - Array{Float,2}, size {3,ntot_lat}
+		nbar       - perpendicular unit vectors of horse-shoe lattice for all lattices
+						: form - Array{Float,2}, size {3,ntot_lat}
+		cbar       - locations of control points or quarter chord points of horse-shoe lattice for all lattices
+						: form - Array{Float,2}, size {3,ntot_lat}
+		dbar       - locations of middle points of horse-shoe lattice for all lattices at Treffts Plane
+						: form - Array{Float,2}, size {3,ntot_lat}
+		tbar       - unit vector for pointing the tail of horse shoe vortices
+						: form - Array{Float,2}, size {3,ntot_lat} 
+		chord      - chord length values at all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+		twist      - twist values at all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+		α_zl       - alpha zero lift values at all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+		θ          - dihedral angle at all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+		Λ          - sweep angle at all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+		ds         - length of filament for all lattices
+						: form - Array{Float,1}, size {ntot_lat}
+
 """
-function geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_perpatch,xyz_qc_patch,chord_patch,twist_patch,α_zl_patch,debug=0)
+function geom_calc(nwing,ntot_patch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_perpatch,xyz_qc_patch,chord_patch,twist_patch,α_zl_patch,debug=0)
 
         #create arrays for the lattices
         sbar = zeros(3,ntot_lat)        # starting of bv
@@ -134,12 +191,13 @@ function geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_perp
 		Λ     = zeros(ntot_lat)         # sweep angle
 		ds    = zeros(ntot_lat)         # lattice length
 
-		#Spanwise mapping
-		spn_map = zeros(Int64,ntot_lat)
+		
+		spn_map = zeros(Int64,ntot_lat) #Spanwise mapping
 
-		#Span per wing
-		nlatspn_perwing = zeros(Int64,nwing)
+		
+		nlatspn_perwing = zeros(Int64,nwing) #Span per wing
 
+		# Loop over to find total span wise locations (Could be eliminated/improved)
 		nspn  = 0
 		ipatch=0
 		for i in 1:nwing
@@ -152,47 +210,63 @@ function geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_perp
 			end
 		end
 
-		#Spanwise locations
-		spn_loc = zeros(nspn)
-
+		
+		spn_loc = zeros(nspn) #Spanwise locations
+		
+		#Initialise counters
         ilat  = 0
         ipatch= 0
 		nspn  = 0
-		#Trailing edge
-		tbar[1:3,:] .= [1.0,0.0,0.0]
+
+		
         for i in  tqdm(1:nwing,leave=false)
                 for j in 1:npatch_perwing[i]
-                        ipatch = ipatch + 1
+                        ipatch = ipatch + 1 #for global patch number
+
+						# Interpolate chord, twist and α_zl values
                         itp_chord = LinearInterpolation(xyz_qc_patch[2,:,ipatch],chord_patch[:,ipatch])
                         itp_twist = LinearInterpolation(xyz_qc_patch[2,:,ipatch],twist_patch[:,ipatch])
-                        itp_α     = LinearInterpolation(xyz_qc_patch[2,:,ipatch],α_zl_patch[:,ipatch])
+                        itp_α_zl  = LinearInterpolation(xyz_qc_patch[2,:,ipatch],α_zl_patch[:,ipatch])
 
+						# Get the starting and ending locations along the chord for each patch
 						nlat_perspan = Int64(nlat_perpatch[ipatch]/nspan_perpatch[ipatch])
 						a = copy(xyz_qc_patch[:,1,ipatch])
                         b = copy(xyz_qc_patch[:,2,ipatch])
+						
+						#
+						# Computing starting root and tip locations for each span
+						#
 						a_span = zeros(3,nspan_perpatch[ipatch])
 						b_span = zeros(3,nspan_perpatch[ipatch])
+						
+						#pvec is perpendicular to (b-a)
 						pvec   = (b[1:2] - a[1:2])/norm(b[1:2]-a[1:2])
 						pvec   = [pvec[2],-pvec[1]]
+						
+						#loop over strips along the chord wise
 						ns     = nspan_perpatch[ipatch]
 						for ispan in 1:ns
 							a_span[:,ispan] = a + 0.25*chord_patch[1,ipatch]*(4*ispan-3-ns)/ns * [pvec[1],pvec[2],0.0]
 							b_span[:,ispan] = b + 0.25*chord_patch[2,ipatch]*(4*ispan-3-ns)/ns * [pvec[1],pvec[2],0.0]
 						end
-						#Sanity check
+						
+						#Sanity check to see the pvec vector is in the right direction
 						#@info pvec
 						if (dot(pvec,[1.0,0.0])<=0.0)
 							println("Error in geom_calc span wise variables")
 							println("Perp Vector Calc wrong")
 							return 
 						end
-						#@info 1,nspan_perpatch[:]
+
+						#Loop over the chord wise strips and lattices in each strip
 						for ispan in 1:nspan_perpatch[ipatch]
                         for k in 1:nlat_perspan
                                 ilat = ilat + 1
                                 a = copy(a_span[:,ispan])
                                 b = copy(b_span[:,ispan])
-                                sbar[:,ilat] =  a + (b - a)/nlat_perspan .*(k-1)
+                                
+								#Find start,end,mid,normal vec, dihedral, sweep, α_zl, ...
+								sbar[:,ilat] =  a + (b - a)/nlat_perspan .*(k-1)
                                 ebar[:,ilat] =  a + (b - a)/nlat_perspan .*(k)
                                 mbar[:,ilat] = 0.5*(sbar[:,ilat]+ebar[:,ilat])
                                 nbar[:,ilat] = cross((ebar[:,ilat] - sbar[:,ilat]),[-1.0,0.0,0.0])/norm(cross((ebar[:,ilat] - sbar[:,ilat]),[-1.0,0.0,0.0]))
@@ -201,39 +275,41 @@ function geom_calc(nwing,npatch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_perp
 								Λ[ilat]      = acos(dot(b[1:2]-a[1:2],[0.0,1.0])/norm(b[1:2]-a[1:2]))
                                 chord[ilat]  = itp_chord(mbar[2,ilat])
                                 twist[ilat]  = itp_twist(mbar[2,ilat])
-                                α_zl[ilat]   = itp_α(mbar[2,ilat])
+                                α_zl[ilat]   = itp_α_zl(mbar[2,ilat])
 								ds[ilat]	 = norm(ebar[2:3,ilat]-sbar[2:3,ilat])#*cos(Λ[ilat])
 
                                 cbar[:,ilat] = mbar[:,ilat] + [chord[ilat]/2,0.0,0.0]
                                 dbar[:,ilat] = [10^8,mbar[2,ilat],mbar[3,ilat]]
-
+								tbar[:,ilat] = [1.0,0.0,0.0]   #Trailing edge vector
+								
+								#To get the spn_loc locations only when using the first strip
 								if (ispan==1)
 									nspn = nspn + 1
-									#@info 2,nspn
 									spn_loc[nspn] = mbar[2,ilat]
-
 								end
 
-								#@info i,ispan,j,k
-								ilat_bef = 0
+								#Compute ispn_bef to locate where in spn_map this patch is starting
+								ispn_bef = 0
 								for ip in 1:ipatch-1
-									ilat_bef = ilat_bef + Int64(nlat_perpatch[ip]/nspan_perpatch[ip])
+									ispn_bef = ilat_bef + Int64(nlat_perpatch[ip]/nspan_perpatch[ip])
 								end
-								spn_map[ilat] = ilat_bef + k
+								spn_map[ilat] = ispn_bef + k
 								
 						end
 						end
+					#finding numer of lattices in spn wise per each wing
 					nlatspn_perwing[i] = nlatspn_perwing[i] + nlat_perspan  
 				end	
         end
-		#@info nlatspn_perwing
 
+		#Debug stuff
         if debug==1
                 display("sbar")
                 display(sbar)
                 display("xyz_qc_patch")
                 display(xyz_qc_patch)
         end
+		
         return nspn,spn_map,spn_loc,sbar,ebar,mbar,nbar,cbar,dbar,tbar,chord,twist,α_zl,θ,Λ,ds
 end
 """
