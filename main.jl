@@ -10,13 +10,37 @@ using NPZ
 """
     read_inp(debug=0)
 
-Read the input from the input file
+Read the input from the input file, creates all the global numbering variables used in later stages
 
 Inputs:
-
-        debug - Integer 0,1 to switch on or off debugging
+	inp_file- Name of the input YAML file with .yaml extension
+    debug   - Integer 0,1 to switch on or off debugging
 
 Outputs:
+	sref      - reference surface area
+	bref      - reference span 
+	cref      - reference chord length
+	aseq      - sequence of alpha to investigate of form [starting,ending,number of steps] of variable types [float,float,integer]
+	vinf      - value of vinf
+	ρ         - density
+	alpha     - angle of attack
+	nwing     - number of wings
+	ntot_patch- total number of patches
+	npatch_perwing
+	          - patches per wing (used for global patches numbering)
+	ntot_lat  - total number of lattices (used for global lattice numbering)
+	nspan_perpatch
+	          - number of spanwise strips per patch (used to loop over spanwise strips)
+	nlat_perpatch
+			  - number of total lattices per patch
+	xyz_qc_patch
+			  - quarter chord locations for each patch of form [(x,y,z),(start,end),global patch number]
+	chord_patch
+		      - chord lengths for the pacthes of form [(start,end),global patch number]
+	twist_patch
+			  - twists for the pacthces of the form [(start,end),gloabl patch number]		  
+	 α_zl_patch
+
 """
 function read_inp(inp_file,debug=0)
         inp_data = YAML.load_file(inp_file)
@@ -249,7 +273,7 @@ end
 """
     calc_vind_finite(rbar,sbar,ebar)
 
-    Input :
+    Input : 
 
     Output:
 
@@ -478,16 +502,9 @@ function main(inp_file,iseq=0)
 	end
 end
 
-#%%
 
-#cbar,Cl,CL,CDind,CDind_ff,SpnLd = main("input.yaml")
-#α,CL_seq,CDind_seq,CDind_ff_seq,slp_CL,slp_CDind,slp_CDind_ff = main("input.yaml",1)
 Cl_spn,nspn,spn_map,spn_loc,θ,rhs,AIC,AICₜ,AICₘ,Λ,sbar,ebar,ds,Γ,chord,cbar,mbar,Cl,CL,CDind,CDind_ff,SpnLd = main("input.yaml");
 
- #%%
- #plot(xlabel="x-coord",ylabel="y-coord",zlabel="Cl-Local Lift")
- #plot!(mbar[1,:],mbar[2,:],Cl,st=:surface,label="Cl")
- #plot!(mbar[1,:],mbar[2,:],Cl,color=:black,camera=(60,30),label="Local Lift Coeff")
 
  plot(spn_loc[1:100],Cl_spn[1:100])
  plot!(spn_loc[101:154],Cl_spn[101:154])
