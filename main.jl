@@ -600,6 +600,9 @@ end
 Cl_spn,nspn,spn_map,spn_loc,θ,rhs,AIC,AICₜ,AICₘ,Λ,sbar,ebar,ds,Γ,chord,cbar,mbar,Cl,CL,CDind,CDind_ff,SpnLd = main("input.yaml");
 
 
- plot(spn_loc[1:100],Cl_spn[1:100])
- plot!(spn_loc[101:154],Cl_spn[101:154])
- savefig("wingtail_test.png")
+#Plot the local Cl
+plt = plot(spn_loc[1:200],Cl_spn[1:200],label="Wing") #wing
+plot!(spn_loc[201:260],Cl_spn[201:260],label="Tail")  #tail
+plot!(title="Cl vs span",xlabel="Span wise location",ylabel="Cl")
+savefig("wingtail_test.png")
+display(plt)
