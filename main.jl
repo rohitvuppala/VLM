@@ -75,7 +75,7 @@ function read_inp(inp_file,debug=0)
                 for j in 1:npatch_perwing[i]
                         counter = counter + 1
 						nspan_perpatch[counter]   = inp_data[str]["patch"*string(j)]["nspan"]
-                        nlat_perpatch[counter]    = inp_data[str]["patch"*string(j)]["nlat"]*nspan_perpatch[j]
+                        nlat_perpatch[counter]    = inp_data[str]["patch"*string(j)]["nlat"]*nspan_perpatch[counter]
 						
                         # at root
                         xyz_qc_patch[:,1,counter] = inp_data[str]["patch"*string(j)]["root"]["xyz_qc"]
@@ -252,17 +252,19 @@ function geom_calc(nwing,ntot_patch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_
 						end
 						
 						#Sanity check to see the pvec vector is in the right direction
-						#@info pvec
+						@info pvec
 						if (dot(pvec,[1.0,0.0])<=0.0)
 							println("Error in geom_calc span wise variables")
 							println("Perp Vector Calc wrong")
 							return 
 						end
 
-						#Loop over the chord wise strips and lattices in each strip
+						#Loop over the chord wise strips and lattices in each strip					
 						for ispan in 1:nspan_perpatch[ipatch]
-                        for k in 1:nlat_perspan
+						for k in 1:nlat_perspan
+								
                                 ilat = ilat + 1
+								
                                 a = copy(a_span[:,ispan])
                                 b = copy(b_span[:,ispan])
                                 
@@ -279,7 +281,7 @@ function geom_calc(nwing,ntot_patch,npatch_perwing,ntot_lat,nspan_perpatch,nlat_
                                 α_zl[ilat]   = itp_α_zl(mbar[2,ilat])
 								ds[ilat]	 = norm(ebar[2:3,ilat]-sbar[2:3,ilat])#*cos(Λ[ilat])
 
-                                cbar[:,ilat] = mbar[:,ilat] + [chord[ilat]/2,0.0,0.0]
+                                cbar[:,ilat] = mbar[:,ilat] + [chord[ilat]/(2*nspan_perpatch[ipatch]),0.0,0.0]
                                 dbar[:,ilat] = [10^8,mbar[2,ilat],mbar[3,ilat]]
 								tbar[:,ilat] = [1.0,0.0,0.0]   #Trailing edge vector
 								
@@ -563,7 +565,7 @@ function main(inp_file,iseq=0)
 
 	else
 		rhs = calc_rhs(ntot_lat,alpha,θ,twist,α_zl)
-		Γ = vinf*AIC\rhs
+		Γ = vinf*(AIC\rhs)
 
 		# Calculate lift and lift coefficient
 		dL = 0.5*ρ*vinf*Γ.*ds # only for static
@@ -606,3 +608,9 @@ plot!(spn_loc[201:260],Cl_spn[201:260],label="Tail")  #tail
 plot!(title="Cl vs span",xlabel="Span wise location",ylabel="Cl")
 savefig("wingtail_test.png")
 display(plt)
+
+#plt = scatter(spn_loc[1:200],Cl_spn[1:200],label="Wing") #wing
+#scatter!(spn_loc[201:260],Cl_spn[201:260],label="Tail")  #tail
+#scatter!(title="Cl vs span",xlabel="Span wise location",ylabel="Cl")
+#savefig("wingtail_test.png")
+#display(plt)
