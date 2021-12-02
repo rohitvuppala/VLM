@@ -6,6 +6,7 @@ using LinearAlgebra
 using ProgressBars
 using Plots
 using NPZ
+using MAT
 
 """
     read_inp(debug=0)
@@ -568,7 +569,7 @@ function main(inp_file,iseq=0)
 		Γ = vinf*(AIC\rhs)
 
 		# Calculate lift and lift coefficient
-		dL = 0.5*ρ*vinf*Γ.*ds # only for static
+		dL = ρ*vinf*Γ.*ds # only for static
 		Cl = 2.0*dL./(ρ*(vinf^2)*chord.*ds)
 		CL = 2.0/sref * sum(Γ.*cos.(θ).*ds/(vinf))
 
@@ -603,8 +604,8 @@ Cl_spn,nspn,spn_map,spn_loc,θ,rhs,AIC,AICₜ,AICₘ,Λ,sbar,ebar,ds,Γ,chord,cb
 
 
 #Plot the local Cl
-plt = plot(spn_loc[1:200],Cl_spn[1:200],label="Wing") #wing
-plot!(spn_loc[201:260],Cl_spn[201:260],label="Tail")  #tail
+plt = plot(spn_loc[1:20],Cl_spn[1:20],label="Wing") #wing
+plot!(spn_loc[21:30],Cl_spn[21:30],label="Tail")  #tail
 plot!(title="Cl vs span",xlabel="Span wise location",ylabel="Cl")
 savefig("wingtail_test.png")
 display(plt)
